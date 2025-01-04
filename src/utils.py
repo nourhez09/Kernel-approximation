@@ -1,4 +1,8 @@
 import numpy as np
+from sklearn.metrics import silhouette_score
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 
 class Kernel:
@@ -37,8 +41,8 @@ class Kernel:
 
 
 class GaussianKernel(Kernel):
-    def __init__(self, sigma=1.0):
-        self.sigma = sigma
+    def __init__(self, gamma=1.0):
+        self.gamma = gamma
 
     def __call__(self, X, Z=None):
         if Z is None:
@@ -57,7 +61,7 @@ class GaussianKernel(Kernel):
         Kxx = np.zeros((n, n))
         for i in range(n):
             for j in range(n):
-                Kxx[i, j] = np.exp(-np.linalg.norm(X[i, :] - X[j, :]) ** 2 / self.sigma ** 2)
+                Kxx[i, j] = np.exp(-self.gamma * np.linalg.norm(X[i, :] - X[j, :]) ** 2)
         return Kxx
 
     def get_Kxz(self, X, Z):
@@ -72,7 +76,7 @@ class GaussianKernel(Kernel):
         Kxz = np.zeros((n, m))
         for i in range(n):
             for j in range(m):
-                Kxz[i, j] = np.exp(-np.linalg.norm(X[i, :] - Z[j, :]) ** 2 / self.sigma ** 2)
+                Kxz[i, j] = np.exp(-self.gamma * np.linalg.norm(X[i, :] - Z[j, :]) ** 2)
         return Kxz
 
 
@@ -103,8 +107,8 @@ class LinearKernel(Kernel):
 
 
 class LaplacianKernel(Kernel):
-    def __init__(self, sigma=1.0):
-        self.sigma = sigma
+    def __init__(self, gamma=1.0):
+        self.gamma = gamma
 
     def __call__(self, X, Z=None):
         if Z is None:
@@ -123,7 +127,7 @@ class LaplacianKernel(Kernel):
         Kxx = np.zeros((n, n))
         for i in range(n):
             for j in range(n):
-                Kxx[i, j] = np.exp(-np.linalg.norm(X[i, :] - X[j, :], ord=1) / self.sigma)
+                Kxx[i, j] = np.exp(-self.gamma * np.linalg.norm(X[i, :] - X[j, :], ord=1))
         return Kxx
 
     def get_Kxz(self, X, Z):
@@ -138,7 +142,7 @@ class LaplacianKernel(Kernel):
         Kxz = np.zeros((n, m))
         for i in range(n):
             for j in range(m):
-                Kxz[i, j] = np.exp(-np.linalg.norm(X[i, :] - Z[j, :], ord=1) / self.sigma)
+                Kxz[i, j] = np.exp(-self.gamma * np.linalg.norm(X[i, :] - Z[j, :], ord=1))
         return Kxz
 
 
@@ -231,16 +235,54 @@ def center_test_gram_matrix(Kxx, Kxz):
     return Kxz_c
 
 
+def explained_variance_ratio(eigvals):
+    total_variance = np.sum(eigvals)
+    explained_variance = np.cumsum(eigvals) / total_variance
+    return explained_variance
+
+
+def silhouete_score_diff(X, X_kpca, y):
+    # Calcul du score silhouette
+    sil_score = silhouette_score(X, y)
+    print(f"Score silhouette original: {sil_score:.2f}")
+    # Calcul du score silhouette
+    sil_score_kpca = silhouette_score(X_kpca, y)
+    print(f"Score silhouette après Kernel PCA: {sil_score_kpca:.2f}")
+    return sil_score, sil_score_kpca
+
+
+def entropy_of_variance(explained_variance_ratio):
+    normalized_ratios = explained_variance_ratio / np.sum(explained_variance_ratio)
+    entropy = -np.sum(normalized_ratios * np.log(normalized_ratios + 1e-10))  # Avoid log(0)
+    print(f"Entropy of Variance Ratios: {entropy:.2f}")
+    return entropy
+
+
+def linear_classification_score(X, y, test_size=0.3, random_state=40):
+    # Diviser les données projetées
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+
+    # Appliquer un classifieur sur les données projetées
+    clf = SVC(kernel='linear', random_state=random_state)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    # Calculer la précision
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Précision linear classification : {accuracy:.2f}")
+    return accuracy
+
+
 if __name__ == '__main__':
     # Example usage of the kernels
     X_train = np.random.rand(5, 3)  # 5 samples, 3 features
     X_test = np.random.rand(3, 3)   # 3 test samples, 3 features
 
-    gaussian_kernel = GaussianKernel(sigma=1.0)
+    gaussian_kernel = GaussianKernel(gamma=0.5)
     Kxx_gaussian = gaussian_kernel.get_Kxx(X_train)
     Kxz_gaussian = gaussian_kernel.get_Kxz(X_train, X_test)
 
-    laplacian_kernel = LaplacianKernel(sigma=1.0)
+    laplacian_kernel = LaplacianKernel(gamma=0.5)
     Kxx_laplacian = laplacian_kernel.get_Kxx(X_train)
     Kxz_laplacian = laplacian_kernel.get_Kxz(X_train, X_test)
 
