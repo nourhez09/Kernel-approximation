@@ -11,10 +11,12 @@ Current code architecture :
 │   ├── __init__.py
 │   ├── approximations.py
 │   ├── tasks.py
-│   └── utils.py
+│   ├── utils.py
+│   └── visualization.py
 └── test
     ├── __init__.py
     ├── test_approximations.py
     ├── test_tasks.py
-    └── test_utils.py
+    ├── test_utils.py
+    └── test_visualization.py
 ```
