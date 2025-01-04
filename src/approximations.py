@@ -7,13 +7,12 @@ from sklearn.base import ClassifierMixin
 from sklearn.utils.validation import check_is_fitted, validate_data
 
 
-
 class RandomFourierFeatures(BaseEstimator):
 
     def __init__(self, n_components=100, gamma=1.0, kernel='rbf', random_state=None):
         """
         Initializes the RandomFourierFeatures class.
-        
+
         :param n_components: The number of random Fourier features to generate.
         :param gamma: A kernel parameter (scale of the distance function).
         :param kernel: The kernel type ('rbf', 'laplace', 'cauchy').
@@ -30,7 +29,7 @@ class RandomFourierFeatures(BaseEstimator):
         """
         Returns the kernel type being used for random Fourier features.
         This determines the distribution from which the random weights are sampled.
-        
+
         :return: A string indicating the kernel type ('rbf', 'laplace', 'cauchy').
         """
         if self.kernel not in ['rbf', 'laplace', 'cauchy']:
@@ -41,7 +40,7 @@ class RandomFourierFeatures(BaseEstimator):
         """
         Fits the random Fourier feature model by generating random weights
         and biases based on the chosen kernel type.
-        
+
         :param X: Input data. A 2D array of shape (n_samples, n_features).
         """
         # Initialize the random number generator
@@ -49,10 +48,10 @@ class RandomFourierFeatures(BaseEstimator):
         X = validate_data(self, X=X, reset=False)
         # Number of samples and features in the input data
         n_samples, n_features = X.shape
-        
+
         # Get the selected kernel type
         kernel_type = self.get_kernel()
-        
+
         # Generate the random weight matrix W based on the kernel type
         if kernel_type == 'rbf':
             # For RBF, W follows a normal distribution
@@ -71,7 +70,7 @@ class RandomFourierFeatures(BaseEstimator):
     def transform(self, X):
         """
         Transforms the input data into the random Fourier feature space.
-        
+
         :param X: Input data. A 2D array of shape (n_samples, n_features).
         :return: The transformed data. A 2D array of shape (n_samples, n_components).
         """
@@ -85,7 +84,7 @@ class RandomFourierFeatures(BaseEstimator):
     def fit_transform(self, X):
         """
         Fits the model and transforms the input data into the random Fourier feature space in a single step.
-        
+
         param X: Input data. A 2D array of shape (n_samples, n_features).
         return: The transformed data. A 2D array of shape (n_samples, n_components).
         """
@@ -154,7 +153,7 @@ class NystromApproximation(BaseEstimator):
         # Initialize random state
         rng = np.random.RandomState(self.random_state)
         n_samples = X.shape[0]
-        
+
         # Randomly sample landmark indices
         indices = rng.choice(n_samples, size=self.n_components, replace=False)
         self.X_m = X[indices]
@@ -205,16 +204,16 @@ class NystromApproximation(BaseEstimator):
         Returns:
             numpy.ndarray: Transformed data of shape (n_samples, n_components).
         """
-        self=self.fit(X)
+        self = self.fit(X)
         return self.transform(X)
 
 
 if __name__ == "__main__":
-    import numpy as np
     from sklearn.datasets import make_classification
     from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import LogisticRegression
     from sklearn.pipeline import Pipeline
+
     X, y = make_classification(n_samples=500, n_features=20, random_state=42)
     X = StandardScaler().fit_transform(X)  # Standardize features
 
@@ -229,7 +228,7 @@ if __name__ == "__main__":
     accuracy_nystrom = clf_nystrom.score(X_nystrom, y)
     print(f"Nystrom approximation accuracy: {accuracy_nystrom:.2f}")
 
-        # Example with RandomFourierFeatures
+    # Example with RandomFourierFeatures
     print("\n=== Random Fourier Features Example ===")
     rff_model = RandomFourierFeatures(n_components=100, kernel="cauchy", gamma=0.5, random_state=42)
     X_rff = rff_model.fit_transform(X)  # Generate random Fourier features
@@ -239,6 +238,3 @@ if __name__ == "__main__":
     clf_rff.fit(X_rff, y)
     accuracy_rff = clf_rff.score(X_rff, y)
     print(f"Random Fourier Features accuracy: {accuracy_rff:.2f}")
-
-
-
