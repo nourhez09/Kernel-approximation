@@ -1,10 +1,8 @@
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from utils import center_train_gram_matrix, center_test_gram_matrix, GaussianKernel
-from approximations import NystromApproximation,RandomFourierFeatures
+from approximations import NystromApproximation, RandomFourierFeatures
 
-import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin
 
 class KernelRidgeRegression(BaseEstimator, RegressorMixin):
     """
@@ -37,16 +35,16 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
             # Use Random Fourier Features for kernel approximation
             Kxx_approx = self.kernel.fit_transform(X)  # Transform data to Fourier feature space
             Kxx = Kxx_approx @ Kxx_approx.T  # Kernel approximation via dot product in feature space
-            self.feature_map_= Kxx_approx
+            self.feature_map_ = Kxx_approx
         elif isinstance(self.kernel, NystromApproximation):
             # Use Nyström Approximation for kernel approximation
             Kxx_approx = self.kernel.fit_transform(X)  # Transform data using Nyström
             Kxx = Kxx_approx @ Kxx_approx.T  # Kernel approximation via dot product in feature space
-            self.feature_map_= Kxx_approx
+            self.feature_map_ = Kxx_approx
         else:
             # Use exact kernel computation (for example, Gaussian kernel)
             Kxx = self.kernel(X)  
-        
+
         # Center the kernel matrix using the utility function
         K_centered = center_train_gram_matrix(Kxx)
         # K_centered=Kxx
@@ -61,7 +59,6 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
         # Store training data for prediction
         self.X_train_ = X
         self.kxx_ = Kxx
-        
 
     def predict(self, X):
         """
@@ -87,7 +84,7 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
             Kxz = self.kernel(self.X_train_, X)  
 
         # Center the new kernel matrix using the same utility function
-        K_new_centered = center_test_gram_matrix(self.kxx_,Kxz)
+        K_new_centered = center_test_gram_matrix(self.kxx_, Kxz)
 
         # Predictions
         y_pred = self.alpha.T@K_new_centered + self.mean_y
@@ -95,10 +92,9 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
         return y_pred
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import mean_squared_error
-    import numpy as np
 
     # Create an RBF kernel with a specific gamma parameter
 
@@ -132,20 +128,3 @@ if __name__=='__main__':
     y_pred_nystrom = model_nystrom.predict(X_test)
     mse = mean_squared_error(y_test, y_pred_nystrom)
     print(f'Mean Squared Error: {mse}')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

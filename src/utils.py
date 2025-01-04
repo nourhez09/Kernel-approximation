@@ -1,10 +1,11 @@
 import numpy as np
 
+
 class Kernel:
     def compute_norm_f(self, Kxx, alpha):
         """
         Computes the norm of the function in the feature space.
-        
+
         :param Kxx: np.ndarray of shape (n, n) - The Gram matrix (kernel matrix) of the training data.
         :param alpha: np.ndarray of shape (n,) - The dual coefficients.
         :return: float - The computed norm.
@@ -15,7 +16,7 @@ class Kernel:
     def compute_prediction_train(self, Kxx, alpha):
         """
         Computes the predictions on the training set.
-        
+
         :param Kxx: np.ndarray of shape (n, n) - The Gram matrix (kernel matrix) of the training data.
         :param alpha: np.ndarray of shape (n,) - The dual coefficients.
         :return: np.ndarray of shape (n,) - Predictions on the training data.
@@ -26,7 +27,7 @@ class Kernel:
     def compute_prediction_test(self, Kxz, alpha):
         """
         Computes the predictions on the test set.
-        
+
         :param Kxz: np.ndarray of shape (n, m) - The kernel matrix between training and test data.
         :param alpha: np.ndarray of shape (n,) - The dual coefficients.
         :return: np.ndarray of shape (m,) - Predictions on the test data.
@@ -48,7 +49,7 @@ class GaussianKernel(Kernel):
     def get_Kxx(self, X):
         """
         Computes the Gram matrix (kernel matrix) for the training data using the Gaussian (RBF) kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :return: np.ndarray of shape (n, n) - The kernel matrix.
         """
@@ -62,7 +63,7 @@ class GaussianKernel(Kernel):
     def get_Kxz(self, X, Z):
         """
         Computes the kernel matrix between the training data X and the test data Z.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :param Z: np.ndarray of shape (m, d) - The feature matrix for the test data.
         :return: np.ndarray of shape (n, m) - The kernel matrix between X and Z.
@@ -82,7 +83,7 @@ class LinearKernel(Kernel):
     def get_Kxx(self, X):
         """
         Computes the Gram matrix (kernel matrix) for the training data using the linear kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :return: np.ndarray of shape (n, n) - The kernel matrix.
         """
@@ -92,7 +93,7 @@ class LinearKernel(Kernel):
     def get_Kxz(self, X, Z):
         """
         Computes the kernel matrix between the training data X and the test data Z using the linear kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :param Z: np.ndarray of shape (m, d) - The feature matrix for the test data.
         :return: np.ndarray of shape (n, m) - The kernel matrix between X and Z.
@@ -108,7 +109,7 @@ class LaplacianKernel(Kernel):
     def get_Kxx(self, X):
         """
         Computes the Gram matrix (kernel matrix) for the training data using the Laplacian kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :return: np.ndarray of shape (n, n) - The kernel matrix.
         """
@@ -122,7 +123,7 @@ class LaplacianKernel(Kernel):
     def get_Kxz(self, X, Z):
         """
         Computes the kernel matrix between the training data X and the test data Z using the Laplacian kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :param Z: np.ndarray of shape (m, d) - The feature matrix for the test data.
         :return: np.ndarray of shape (n, m) - The kernel matrix between X and Z.
@@ -142,7 +143,7 @@ class CauchyLorentzKernel(Kernel):
     def get_Kxx(self, X):
         """
         Computes the Gram matrix (kernel matrix) for the training data using the Cauchy Lorentz kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :return: np.ndarray of shape (n, n) - The kernel matrix.
         """
@@ -156,7 +157,7 @@ class CauchyLorentzKernel(Kernel):
     def get_Kxz(self, X, Z):
         """
         Computes the kernel matrix between the training data X and the test data Z using the Cauchy Lorentz kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :param Z: np.ndarray of shape (m, d) - The feature matrix for the test data.
         :return: np.ndarray of shape (n, m) - The kernel matrix between X and Z.
@@ -177,7 +178,7 @@ class PolynomialKernel(Kernel):
     def get_Kxx(self, X):
         """
         Computes the Gram matrix (kernel matrix) for the training data using the Polynomial kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :return: np.ndarray of shape (n, n) - The kernel matrix.
         """
@@ -187,7 +188,7 @@ class PolynomialKernel(Kernel):
     def get_Kxz(self, X, Z):
         """
         Computes the kernel matrix between the training data X and the test data Z using the Polynomial kernel.
-        
+
         :param X: np.ndarray of shape (n, d) - The feature matrix for the training data.
         :param Z: np.ndarray of shape (m, d) - The feature matrix for the test data.
         :return: np.ndarray of shape (n, m) - The kernel matrix between X and Z.
@@ -199,7 +200,7 @@ class PolynomialKernel(Kernel):
 def center_train_gram_matrix(Kxx):
     """
     Centers the kernel matrix for the training set.
-    
+
     :param Kxx: np.ndarray of shape (n, n) - The kernel matrix of the training data.
     :return: np.ndarray of shape (n, n) - The centered kernel matrix.
     """
@@ -212,7 +213,7 @@ def center_train_gram_matrix(Kxx):
 def center_test_gram_matrix(Kxx, Kxz):
     """
     Centers the kernel matrix for the test set.
-    
+
     :param Kxx: np.ndarray of shape (n, n) - The kernel matrix of the training data.
     :param Kxz: np.ndarray of shape (n, m) - The kernel matrix between the training and test data.
     :return: np.ndarray of shape (n, m) - The centered kernel matrix between training and test data.
@@ -222,7 +223,6 @@ def center_test_gram_matrix(Kxx, Kxz):
     unit_matrix_m = np.ones((n, m)) / n
     Kxz_c = Kxz - np.dot(unit_matrix_n, Kxz) - np.dot(Kxx, unit_matrix_m) + np.dot(np.dot(unit_matrix_n, Kxx), unit_matrix_m)
     return Kxz_c
-
 
 
 if __name__ == '__main__': 
