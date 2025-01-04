@@ -92,6 +92,83 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
         return y_pred
 
 
+class KernelPCA:
+    """
+    A class for performing Kernel PCA, including an approximate version using Nyström method.
+    """
+
+    def __init__(self, n_components, kernel_func=None, kernel_params=None):
+        """
+        Initialize the KernelPCA object.
+
+        Parameters:
+        - n_components: int, number of principal components.
+        - kernel_func: callable, kernel function (e.g., RBF kernel).
+        - kernel_params: dict, additional parameters for the kernel function.
+        """
+        self.n_components = n_components
+        self.kernel_func = kernel_func
+        self.kernel_params = kernel_params if kernel_params else {}
+
+    def fit_transform(self, X):
+        """
+        Perform Kernel PCA on the input data.
+
+        Parameters:
+        - X: ndarray of shape (n_samples, n_features), input data.
+
+        Returns:
+        - X_transformed: ndarray, projected data in the kernel PCA space.
+        - eigvals: ndarray, eigenvalues of the centered kernel matrix.
+        - eigvecs: ndarray, eigenvectors of the centered kernel matrix.
+        """
+        # Compute the kernel matrix
+        K = self.kernel_func(X, **self.kernel_params)
+        # Center the kernel matrix
+        K_centered = center_train_gram_matrix(K)
+        # Eigen-decomposition
+        eigvals, eigvecs = np.linalg.eigh(K_centered)
+        # Sort in descending order
+        eigvals, eigvecs = eigvals[::-1], eigvecs[:, ::-1]
+        # Select top components
+        alphas = eigvecs[:, :self.n_components]
+        lambdas = eigvals[:self.n_components]
+        # Transform data
+        X_transformed = alphas * np.sqrt(lambdas)
+        return X_transformed, eigvals, eigvecs
+
+    def fit_transform_approx(self, X, nystroem_model):
+        """
+        Perform approximate Kernel PCA using the Nyström method.
+
+        Parameters:
+        - X: ndarray of shape (n_samples, n_features), input data.
+        - nystroem_model: object, a fitted Nyström kernel approximation model.
+
+        Returns:
+        - X_transformed: ndarray, projected data in the approximate kernel PCA space.
+        - eigvals: ndarray, eigenvalues of the centered kernel matrix.
+        - eigvecs: ndarray, eigenvectors of the centered kernel matrix.
+        """
+        # Fit the Nyström model
+        nystroem_model.fit(X)
+        # Compute the approximate kernel matrix
+        Z = nystroem_model.transform(X)
+        K_approx = Z @ Z.T
+        # Center the kernel matrix
+        K_centered = center_train_gram_matrix(K_approx)
+        # Eigen-decomposition
+        eigvals, eigvecs = np.linalg.eigh(K_centered)
+        # Sort in descending order
+        eigvals, eigvecs = eigvals[::-1], eigvecs[:, ::-1]
+        # Select top components
+        alphas = eigvecs[:, :self.n_components]
+        lambdas = eigvals[:self.n_components]
+        # Transform data
+        X_transformed = alphas * np.sqrt(lambdas)
+        return X_transformed, eigvals, eigvecs
+
+
 if __name__ == '__main__':
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import mean_squared_error
@@ -106,7 +183,7 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Use Gaussian Kernel
-    gaussian_kernel = GaussianKernel(sigma=1.0)
+    gaussian_kernel = GaussianKernel(gamma=0.5)
     model = KernelRidgeRegression(kernel=gaussian_kernel)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
