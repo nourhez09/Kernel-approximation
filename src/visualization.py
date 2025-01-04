@@ -81,3 +81,24 @@ def plot_silhouette_vs_gamma(X, y, kernel_class, gammas=None, n_components=2, ti
     plt.ylabel("Silhouette Score")
     plt.grid(True)
     plt.show()
+
+
+if __name__ == "__main__":
+    from utils import GaussianKernel
+    from sklearn.datasets import make_blobs
+
+    # Generate synthetic data
+    X, y = make_blobs(n_samples=100, centers=3, n_features=2, random_state=42)
+
+    # Apply Kernel PCA and visualize
+    gaussian_kernel = GaussianKernel(sigma=1.0)
+    kpca = KernelPCA(n_components=2, kernel_func=gaussian_kernel)
+    X_kpca, eigvals, _ = kpca.fit_transform(X)
+
+    plot_kpca(X, X_kpca, y)
+
+    # Plot explained variance ratio
+    plot_variance_ratio(eigvals, limit=10)
+
+    # Visualize silhouette scores for different gamma values
+    plot_silhouette_vs_gamma(X, y, GaussianKernel, gammas=np.logspace(-3, 2, 10), n_components=2)
