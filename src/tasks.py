@@ -43,7 +43,7 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
             self.feature_map_ = Kxx_approx
         else:
             # Use exact kernel computation (for example, Gaussian kernel)
-            Kxx = self.kernel(X)  
+            Kxx = self.kernel(X)
 
         # Center the kernel matrix using the utility function
         K_centered = center_train_gram_matrix(Kxx)
