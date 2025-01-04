@@ -42,9 +42,9 @@ class GaussianKernel(Kernel):
 
     def __call__(self, X, Z=None):
         if Z is None:
-            return self.get_Kxx(X)  
+            return self.get_Kxx(X)
         else:
-            return self.get_Kxz(X, Z)  
+            return self.get_Kxz(X, Z)
 
     def get_Kxx(self, X):
         """
@@ -105,6 +105,12 @@ class LinearKernel(Kernel):
 class LaplacianKernel(Kernel):
     def __init__(self, sigma=1.0):
         self.sigma = sigma
+
+    def __call__(self, X, Z=None):
+        if Z is None:
+            return self.get_Kxx(X)  # Compute the Gram matrix for training data
+        else:
+            return self.get_Kxz(X, Z)  # Compute the kernel matrix between training and test data
 
     def get_Kxx(self, X):
         """
@@ -225,7 +231,7 @@ def center_test_gram_matrix(Kxx, Kxz):
     return Kxz_c
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     # Example usage of the kernels
     X_train = np.random.rand(5, 3)  # 5 samples, 3 features
     X_test = np.random.rand(3, 3)   # 3 test samples, 3 features
