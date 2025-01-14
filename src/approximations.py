@@ -1,10 +1,10 @@
 import numpy as np 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator,TransformerMixin
 from sklearn.utils.validation import validate_data
-from src.utils import Kernel, GaussianKernel, LinearKernel, LaplacianKernel, CauchyLorentzKernel, PolynomialKernel
+from utils import Kernel, GaussianKernel, LinearKernel, LaplacianKernel, CauchyLorentzKernel, PolynomialKernel
 
 
-class RandomFourierFeatures(BaseEstimator):
+class RandomFourierFeatures(TransformerMixin,BaseEstimator):
 
     def __init__(self, n_components=100, gamma=1.0, kernel='rbf', random_state=None):
         """
@@ -54,13 +54,11 @@ class RandomFourierFeatures(BaseEstimator):
             # For RBF, W follows a normal distribution
             self.W = rng.normal(0, np.sqrt(2 * self.gamma), (self.n_components, n_features))
         elif kernel_type == 'laplace':
-            # For Laplacian kernel, W follows a Laplace distribution
-            self.W = rng.laplace(0, 1 / self.gamma, (self.n_components, n_features))
-        elif kernel_type == 'cauchy':
-            # For Cauchy-Lorentz kernel, W follows a standard Cauchy distribution scaled by gamma
+            # For Laplacian kernel, W follows a standard Cauchy distribution
             self.W = rng.standard_cauchy((self.n_components, n_features)) / self.gamma
-            # Optionally, clip extreme values of W to prevent numerical instability
-
+        elif kernel_type == 'cauchy':
+            # For Cauchy-Lorentz kernel, W follows a Laplace distribution
+            self.W = rng.laplace(0, 1 / self.gamma, (self.n_components, n_features))
         # Generate the random bias vector b (uniformly distributed)
         self.b = rng.uniform(0, 2 * np.pi, self.n_components)
 
@@ -88,7 +86,7 @@ class RandomFourierFeatures(BaseEstimator):
         return self.transform(X)
 
 
-class NystromApproximation(BaseEstimator):
+class NystromApproximation(TransformerMixin,BaseEstimator):
     """
     Nystrom approximation for kernel-based methods.
 
