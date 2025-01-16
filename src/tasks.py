@@ -176,6 +176,96 @@ class KernelPCA:
         X_transformed = alphas * np.sqrt(lambdas)
         return X_transformed, eigvals, eigvecs
 
+class SVM_RBF:
+    def __init__(self, C=1.0, gamma=0.1):
+        self.C = C  # Paramètre de régularisation
+        self.gamma = gamma  # Paramètre du noyau RBF
+    
+    # Fonction noyau RBF
+    def rbf_kernel(self, X, Z):
+        # Calcul de la matrice de noyau RBF entre X et Z
+        pairwise_sq_dists = np.sum(X**2, axis=1).reshape(-1, 1) + np.sum(Z**2, axis=1) - 2 * np.dot(X, Z.T)
+        return np.exp(-self.gamma * pairwise_sq_dists)
+    
+    def qp_solver_own(P, q, G, h, A, b, max_iter=1000, tol=1e-6, alpha=1e-2):
+        """
+        Solves the Quadratic Programming problem using a gradient descent method.
+        """
+        # Initialize x randomly or at zero
+        x = np.zeros(P.shape[1])
+
+        # Gradient descent loop
+        for _ in range(max_iter):
+            # Calculate the gradient of the objective function
+            grad = np.dot(P, x) + q 
+
+            # Gradient descent step
+            x = x - alpha * grad
+
+            for i in range(len(G)):
+                if np.dot(G[i], x) > h[i]:
+                    x = x - alpha * (np.dot(G[i], x) - h[i]) * G[i]
+
+            # Project onto the equality constraints: Ax = b
+            x = x + np.linalg.lstsq(A, b - np.dot(A, x), rcond=None)[0]
+
+            # Check for convergence (if the gradient is close to zero)
+            if np.linalg.norm(grad) < tol:
+                break
+        return x
+    
+    # Entraînement du SVM
+    def fit(self, X, y):
+        m, n = X.shape
+        # Calcul de la matrice de noyau K
+        K = self.rbf_kernel(X, X)
+        
+        # Matrice P, q, G, h pour le problème quadratique
+        Y = y.reshape(-1, 1)  # Labels sous forme colonne
+        P = np.dot(Y, Y.T) * K  # P = Y * K * Y
+        q = -np.ones(m)  # q = -1
+        
+        # Matrices G et h pour les contraintes (0 <= alpha_i <= C)
+        G = np.vstack([-np.eye(m), np.eye(m)])  # G = [-I; I]
+        h = np.hstack([np.zeros(m), np.ones(m) * self.C])  # h = [0; C]
+        
+        # Matrice A et b pour la contrainte d'égalité Y^T alpha = 0
+        A = Y.T
+        b = np.zeros(1)
+
+        # Résolution du problème quadratique avec cvxopt
+        # P = matrix(P)
+        # q = matrix(q)
+        # G = matrix(G)
+        # h = matrix(h)
+        
+        # Résolution du problème QP
+        #solution = solvers.qp(P, q, G, h, A, b)
+        solution = qp_solver_own(P, q, G, h, A, b, max_iter=1000, tol=1e-6, alpha=1e-2)
+        print(solution)
+        
+        self.alpha = solution
+        
+        # Calcul des vecteurs supports et du biais b
+        self.support_vectors = X[self.alpha > 1e-5]
+        self.support_labels = y[self.alpha > 1e-5]
+        self.alpha_sv = self.alpha[self.alpha > 1e-5]
+        
+        # Calcul du biais b
+        b_values = []
+        for i in range(len(self.support_vectors)):
+            b_values.append(self.support_labels[i] - np.sum(self.alpha_sv * self.support_labels * K[self.alpha > 1e-5, i]))
+        self.b = np.mean(b_values)
+
+    # Prédiction avec le SVM
+    def predict(self, X):
+        # Calcul des noyaux entre les points de test et les vecteurs supports
+        K_test = self.rbf_kernel(X, self.support_vectors)
+        # Calcul des valeurs de décision
+        decision_values = np.dot(self.alpha_sv * self.support_labels, K_test.T) + self.b
+        return np.sign(decision_values)  # Prédiction : +1 ou -1
+
+
 
 if __name__ == '__main__':
     from sklearn.model_selection import train_test_split
