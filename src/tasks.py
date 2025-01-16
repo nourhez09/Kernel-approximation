@@ -176,7 +176,7 @@ class KernelPCA:
         X_transformed = alphas * np.sqrt(lambdas)
         return X_transformed, eigvals, eigvecs
 
-class SVM_RBF:
+class SVC:
     def __init__(self, C=1.0, gamma=0.1):
         self.C = C  # Paramètre de régularisation
         self.gamma = gamma  # Paramètre du noyau RBF
