@@ -41,9 +41,13 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
             Kxx_approx = self.kernel.fit_transform(X)  # Transform data using Nyström
             Kxx = Kxx_approx @ Kxx_approx.T  # Kernel approximation via dot product in feature space
             self.feature_map_ = Kxx_approx
-        else:
+        elif callable(self.kernel):
             # Use exact kernel computation (for example, Gaussian kernel)
             Kxx = self.kernel(X)
+        else:
+            Kxx_approx = self.kernel  # Use a precomputed value for Kxx
+            Kxx = Kxx_approx @ Kxx_approx.T  # Kernel approximation via dot product in feature space
+            self.feature_map_ = Kxx_approx
 
         # Center the kernel matrix using the utility function
         K_centered = center_train_gram_matrix(Kxx)
@@ -79,9 +83,13 @@ class KernelRidgeRegression(BaseEstimator, RegressorMixin):
             # Use Nyström Approximation for kernel approximation
             Kxz_approx = self.kernel.transform(X)  # Transform test data using Nyström
             Kxz = self.feature_map_ @ Kxz_approx.T  # Kernel approximation via dot product in feature space
+        elif callable(self.kernel):
+            # Use exact kernel computation
+            Kxz = self.kernel(self.X_train_, X)
         else:
-            # Use exact kernel computation 
-            Kxz = self.kernel(self.X_train_, X)  
+            # Use Nyström Approximation for kernel approximation
+            Kxz_approx = X  # pre-transformed test data using Nyström
+            Kxz = self.feature_map_ @ Kxz_approx.T  # Kernel approximation via dot product in feature space
 
         # Center the new kernel matrix using the same utility function
         K_new_centered = center_test_gram_matrix(self.kxx_, Kxz)

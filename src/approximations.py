@@ -1,10 +1,10 @@
-import numpy as np 
-from sklearn.base import BaseEstimator,TransformerMixin
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import validate_data
 from utils import Kernel, GaussianKernel, LinearKernel, LaplacianKernel, CauchyLorentzKernel, PolynomialKernel
 
 
-class RandomFourierFeatures(TransformerMixin,BaseEstimator):
+class RandomFourierFeatures(TransformerMixin, BaseEstimator):
 
     def __init__(self, n_components=100, gamma=1.0, kernel='rbf', random_state=None):
         """
@@ -86,7 +86,7 @@ class RandomFourierFeatures(TransformerMixin,BaseEstimator):
         return self.transform(X)
 
 
-class NystromApproximation(TransformerMixin,BaseEstimator):
+class NystromApproximation(TransformerMixin, BaseEstimator):
     """
     Nystrom approximation for kernel-based methods.
 
